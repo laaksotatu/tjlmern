@@ -1,0 +1,36 @@
+.inputBase {
+  margin: 1rem 1rem;
+  padding: 1rem;
+}
+
+.inputBase label {
+  margin-bottom: 0.5rem;
+  padding: 5px;
+}
+
+.inputBase label,
+.inputBase input,
+.inputBase textarea {
+  display: block;
+}
+
+.inputBase input {
+  width: 300px;
+  font: inherit;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  padding: 0.15rem 0.25rem;
+}
+.inputBase textarea {
+  width: 90%;
+  font: inherit;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  padding: 0.15rem 0.25rem;
+}
+
+.inputInvalid input,
+.inputInvalid textarea {
+  border-color: red;
+  background: #ffd1d1;
+}

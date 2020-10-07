@@ -1,0 +1,26 @@
+.navLinks {
+  display: flex;
+  justify-content: space-between;
+}
+
+.navLinks li {
+  padding: 0.6rem;
+  margin: 0.3rem;
+  background: #999;
+  border-radius: 5px;
+  border: solid black 1px;
+}
+
+.logout_btn {
+  font-size: inherit;
+  background: #999;
+  border: none;
+  font-weight: bold;
+  color: red;
+  cursor: pointer;
+}
+
+.navLinks a {
+  text-decoration: none;
+  color: inherit;
+}
