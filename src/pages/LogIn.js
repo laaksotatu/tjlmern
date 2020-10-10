@@ -3,6 +3,7 @@ import {useFormik} from 'formik'
 import * as Yup from 'yup';
 
 import Button from '../components/Button';
+import '../styles/formStyle.css';
 
 import { useForm } from '../custom-hooks/FormHook';
 import { AuthContext } from '../context/authContext';
@@ -149,9 +150,11 @@ const LogIn = () => {
 
   return (
     <React.Fragment>
+      <div className="login-box">
       <form onSubmit={authSubmitHandler}>
         {!loginMode && (
           <React.Fragment>
+            <div>
           <label htmlFor="name">name</label>
           <input
             
@@ -164,9 +167,12 @@ const LogIn = () => {
             onBlur={formik.handleBlur}
             value={formik.values.name}
           />
+          </div>
           {formik.errors.name && formik.touched.name && <p>{formik.errors.name}</p>}
+          
           </React.Fragment>
         )}
+        <div>
         <label htmlFor="email">email</label>
         <input
           element='input'
@@ -178,7 +184,10 @@ const LogIn = () => {
           onBlur={formik.handleBlur}
           value={formik.values.email}
         />
+        </div>
         {formik.errors.email && formik.touched.email && <p>{formik.errors.email}</p>}
+
+        <div>
         <label htmlFor="password">password</label>
         
         <input
@@ -191,15 +200,21 @@ const LogIn = () => {
           onBlur={formik.handleBlur}
           value={formik.values.password}
         />
+        </div>
         {formik.errors.password && formik.touched.password && <p>{formik.errors.password}</p>}
+        <div>
         <button type='submit' disabled={!overallValidity}>
           {loginMode ? 'LOGIN' : 'SIGNUP'}
         </button>
+        </div>
       </form>
-      <Button onClick={switchModeHandler}>
+      
+      <button onClick={switchModeHandler}>
         SWAP TO {loginMode ? 'SIGNUP' : 'LOGIN'}
-      </Button>
+      </button>
+      
       {error && <h4>{`${error}`}</h4>}
+      </div>
     </React.Fragment>
   );
 };
