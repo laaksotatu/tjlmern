@@ -14,7 +14,7 @@
   color: black;
 
   font: 400 1rem Arial;
-  border-radius: 5px;
+  border-radius: 3px;
   border: 1px #222 solid;
 }
 .button_default:hover {

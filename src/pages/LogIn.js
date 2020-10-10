@@ -1,12 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import {useFormik} from 'formik'
+import * as Yup from 'yup';
 
-import Input from '../components/Input';
 import Button from '../components/Button';
-import {
-  VALIDATOR_EMAIL,
-  VALIDATOR_MINLENGTH,
-  VALIDATOR_REQUIRE,
-} from '../utility/validators';
+
 import { useForm } from '../custom-hooks/FormHook';
 import { AuthContext } from '../context/authContext';
 
@@ -14,6 +11,62 @@ const LogIn = () => {
   const auth = useContext(AuthContext);
   const [loginMode, setLoginMode] = useState(true);
   const [error, setError] = useState();
+  const [overallValidity, setOverallValidity] =useState(false);
+
+  const initialValues = {
+    name: '',
+    email: '',
+    password: ''
+  }
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required('Required'),
+    email: Yup.string().required('Required').email('Invalid email'),
+    password: Yup.string().required('Required').min(5, 'Too Short!')
+  })
+
+  const validityCheck = () => {
+    console.log(formik.errors.email)
+    console.log(formik.errors.password)
+
+    if(loginMode && formik.errors.email === undefined && formik.errors.password === undefined && (formik.touched.email === true  || formik.touched.password === true)){
+      console.log('validform')
+      setOverallValidity(true);
+    }
+
+    if(loginMode && (formik.errors.email || formik.errors.password)){
+      console.log('invalid')
+      setOverallValidity(false);
+    }
+
+    if(!loginMode && formik.errors.email === undefined && formik.errors.password === undefined && formik.errors.name === undefined && (formik.touched.email === true  || formik.touched.password === true || formik.touched.name === true)){
+      console.log('validform')
+      setOverallValidity(true);
+    }
+    if(!loginMode && (formik.errors.email || formik.errors.password || formik.errors.name)){
+      console.log('invalid')
+      setOverallValidity(false);
+    }
+    
+  }
+
+  const formik =  useFormik({
+    initialValues,
+    validationSchema,
+    
+    //validate 
+  })
+
+
+
+
+  useEffect(() => {
+    console.log('values changed')
+    validityCheck()
+    
+    
+  }, [ loginMode, formik.errors, validityCheck])
+
 
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -31,30 +84,18 @@ const LogIn = () => {
 
   const switchModeHandler = () => {
     if (!loginMode) {
-      setFormData(
-        {
-          ...formState.inputs,
-          name: undefined,
-        },
-        formState.inputs.email.isValid && formState.inputs.password.isValid
-      );
+    console.log('swap su')
+    setOverallValidity(false)
     } else {
-      setFormData(
-        {
-          ...formState.inputs,
-          name: {
-            value: '',
-            isValid: false,
-          },
-        },
-        false
-      );
+    console.log('swap lo')
     }
     setLoginMode((prevMode) => !prevMode);
   };
 
   const authSubmitHandler = async (event) => {
     event.preventDefault();
+    console.log('submitted')
+    console.log(formik.values)
 
     if (loginMode) {
       try {
@@ -64,8 +105,8 @@ const LogIn = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value,
+            email: formik.values.email,
+            password: formik.values.password,
           }),
         });
 
@@ -87,9 +128,9 @@ const LogIn = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            name: formState.inputs.name.value,
-            email: formState.inputs.email.value,
-            password: formState.inputs.password.value,
+            name: formik.values.name,
+            email: formik.values.email,
+            password: formik.values.password,
           }),
         });
 
@@ -110,37 +151,50 @@ const LogIn = () => {
     <React.Fragment>
       <form onSubmit={authSubmitHandler}>
         {!loginMode && (
-          <Input
+          <React.Fragment>
+          <label htmlFor="name">name</label>
+          <input
+            
             element='input'
             id='name'
             type='text'
-            label='Name'
-            validators={[VALIDATOR_REQUIRE()]}
-            errorText='Enter a name'
+            name="name"
             onInput={inputHandler}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.name}
           />
+          {formik.errors.name && formik.touched.name && <p>{formik.errors.name}</p>}
+          </React.Fragment>
         )}
-        <Input
+        <label htmlFor="email">email</label>
+        <input
           element='input'
           id='email'
           type='email'
-          label='email'
-          validators={[VALIDATOR_EMAIL()]}
-          errorText='Enter a valid email address'
+          name="email"
           onInput={inputHandler}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.email}
         />
-        <Input
+        {formik.errors.email && formik.touched.email && <p>{formik.errors.email}</p>}
+        <label htmlFor="password">password</label>
+        
+        <input
           element='input'
           id='password'
           type='password'
-          label='password'
-          validators={[VALIDATOR_MINLENGTH(5)]}
-          errorText='Enter a valid password, min 5 characters'
+          name="password"
           onInput={inputHandler}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.password}
         />
-        <Button type='submit' disabled={!formState.isValid}>
+        {formik.errors.password && formik.touched.password && <p>{formik.errors.password}</p>}
+        <button type='submit' disabled={!overallValidity}>
           {loginMode ? 'LOGIN' : 'SIGNUP'}
-        </Button>
+        </button>
       </form>
       <Button onClick={switchModeHandler}>
         SWAP TO {loginMode ? 'SIGNUP' : 'LOGIN'}
