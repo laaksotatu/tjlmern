@@ -76,8 +76,7 @@ const LogIn = () => {
 
   const authSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log('submitted')
-    console.log(formik.values)
+
 
     if (loginMode) {
       try {
