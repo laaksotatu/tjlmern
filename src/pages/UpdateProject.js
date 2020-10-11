@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
+import {useFormik} from 'formik'
+import * as Yup from 'yup';
 
-import Input from '../components/Input';
 import Button from '../components/Button';
-import { VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH } from '../utility/validators';
-import { useForm } from '../custom-hooks/FormHook';
 import { AuthContext } from '../context/authContext';
 
 const UpdateProject = () => {
@@ -12,56 +11,85 @@ const UpdateProject = () => {
   const [loadedProject, setLoadedProject] = useState();
   const projectId = useParams().projectId;
   const history = useHistory();
+  const [overallValidity, setOverallValidity] =useState(true);
 
-  const [formState, inputHandler, setFormData] = useForm(
-    {
-      title: {
-        value: '',
-        isValid: false,
-      },
-      description: {
-        value: '',
-        isValid: false,
-      },
-    },
-    false
-  );
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:5000/api/projects/${projectId}`,
-          {
-            method: 'GET',
-          }
-        );
+  const initialValues = {
+    title:  '' ,
+    description:   '' 
+  }
 
-        const responseData = await response.json();
-        if (!response.ok) {
-          throw new Error(responseData.message);
+  const validationSchema = Yup.object({
+    title: Yup.string().required('Required'),
+    description: Yup.string().required('Required').min(10, 'Too Short!')
+  })
+
+  const formik =  useFormik({
+    initialValues,
+    validationSchema,
+  })
+
+
+
+  const validityCheck = useCallback(() => {
+    if(formik.errors.title === undefined && formik.errors.description === undefined){
+     setOverallValidity(true);
+   }
+
+   if(formik.errors.title || formik.errors.description ){
+     setOverallValidity(false);
+   }
+   
+ },[formik.errors.description, formik.errors.title])
+
+ useEffect(() => {
+
+   validityCheck()   
+
+ }, [formik.errors,validityCheck])
+
+ const setData = () => {
+  formik.setFieldValue("title", loadedProject.title)
+  formik.setFieldValue('description', loadedProject.description)
+  
+};
+  
+
+ useEffect(() => {
+
+  
+   
+  const fetchProject = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/projects/${projectId}`,
+        {
+          method: 'GET',
         }
+      );
 
-        setFormData(
-          {
-            title: {
-              value: responseData.project.title,
-              isValid: true,
-            },
-            description: {
-              value: responseData.project.description,
-              isValid: true,
-            },
-          },
-          true
-        );
-        setLoadedProject(responseData.project);
-      } catch (err) {
-        console.log(err);
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.message);
       }
-    };
-    fetchProject();
-  }, [projectId, setFormData]);
+
+      setLoadedProject(responseData.project);
+
+      
+      setOverallValidity(true);
+
+
+       
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  fetchProject();
+  
+}, [projectId ]);
+
+
 
   const projectUpdateSubmitHandler = async (event) => {
     event.preventDefault();
@@ -73,8 +101,8 @@ const UpdateProject = () => {
           Authorization: auth.token,
         },
         body: JSON.stringify({
-          title: formState.inputs.title.value,
-          description: formState.inputs.description.value,
+          title: formik.values.title,
+          description: formik.values.description,
         }),
       });
 
@@ -84,40 +112,51 @@ const UpdateProject = () => {
     }
   };
 
+  
+
+
+
   if (!loadedProject) {
     // style in button.css
-    return <div class='loader'></div>;
+    return <div className='loader'></div>;
+  } 
+
+  if(loadedProject && formik.values.title === '' && formik.values.title === '') {
+    setData();
+    setOverallValidity(true);
   }
+  
 
   return (
     <React.Fragment>
       {loadedProject && (
         <form onSubmit={projectUpdateSubmitHandler}>
-          <Input
-            id='title'
-            element='input'
-            type='text'
-            label='Title'
-            validators={[VALIDATOR_REQUIRE()]}
-            errorText='Invalid input'
-            onInput={inputHandler}
-            originalValue={loadedProject.title}
-            originalValid={true}
-          />
-          <Input
-            id='description'
-            element='textarea'
-            label='Description'
-            validators={[VALIDATOR_MINLENGTH(5)]}
-            errorText='Invalid input'
-            onInput={inputHandler}
-            originalValue={loadedProject.description}
-            originalValid={true}
-          />
-          <Button type='submit' disabled={!formState.isValid}>
-            UPDATE PROJECT
-          </Button>
-        </form>
+        <div className="inputBase">
+        <label htmlFor="">Title</label>
+        <input
+          id='title'
+          name="title"
+          type='text'
+          label='Title'
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.title}
+        />
+        <label htmlFor="">Description</label>
+        <textarea
+          rows="10"
+          id='description'
+          name="description"
+          label='Description'
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values.description}
+        />
+        <Button type='submit' disabled={!overallValidity} >
+          UPDATE PROJECT
+        </Button>
+        </div>
+      </form>
       )}
     </React.Fragment>
   );

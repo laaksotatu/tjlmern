@@ -1,9 +1,9 @@
-.button:disabled,
-.button:hover:disabled,
-.button:active:disabled {
+button:disabled,
+button:hover:disabled,
+button:active:disabled {
   background: #ccc;
   color: #999;
-  border-color: #ccc;
+  border-color: rgb(184, 46, 46);
   cursor: not-allowed;
 }
 
@@ -17,6 +17,7 @@
   border-radius: 3px;
   border: 1px #222 solid;
 }
+
 .button_default:hover {
   cursor: pointer;
 }

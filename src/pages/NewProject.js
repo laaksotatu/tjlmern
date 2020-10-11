@@ -1,32 +1,54 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect, useCallback} from 'react';
 import { useHistory } from 'react-router-dom';
+import {useFormik} from 'formik'
+import * as Yup from 'yup';
 
-import { VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH } from '../utility/validators';
-import Input from '../components/Input';
+import '../styles/formStyle.css';
 import Button from '../components/Button';
-import { useForm } from '../custom-hooks/FormHook';
 import { AuthContext } from '../context/authContext';
 
 const NewProject = () => {
   const auth = useContext(AuthContext);
-  const [formState, inputHandler] = useForm(
-    {
-      title: {
-        value: '',
-        isValid: false,
-      },
-      description: {
-        value: '',
-        isValid: false,
-      },
-    },
-    false
-  );
+  const [overallValidity, setOverallValidity] =useState(false);
+
+  const initialValues = {
+    title: '',
+    description: ''
+  }
+
+  const validationSchema = Yup.object({
+    title: Yup.string().required('Required'),
+    description: Yup.string().required('Required').min(10, 'Too Short!')
+  })
+
+  const formik =  useFormik({
+    initialValues,
+    validationSchema,
+  })
+
+  const validityCheck = useCallback(() => {
+     if(formik.errors.title === undefined && formik.errors.description === undefined && (formik.touched.title === true  || formik.touched.description === true)){
+      setOverallValidity(true);
+    }
+
+    if(formik.errors.title || formik.errors.description ){
+      setOverallValidity(false);
+    }
+    
+  },[formik.errors.description, formik.errors.title, formik.touched.description, formik.touched.title])
+
+  useEffect(() => {
+
+    validityCheck()   
+
+  }, [formik.errors,validityCheck])
+
 
   const history = useHistory();
 
   const projectSubmitHandler = async (event) => {
     event.preventDefault();
+    console.log(formik.values)
     try {
       const response = await fetch('http://localhost:5000/api/projects/new', {
         method: 'POST',
@@ -35,8 +57,8 @@ const NewProject = () => {
           Authorization: auth.token,
         },
         body: JSON.stringify({
-          title: formState.inputs.title.value,
-          description: formState.inputs.description.value,
+          title: formik.values.title,
+          description: formik.values.description,
           author: auth.userId,
         }),
       });
@@ -53,26 +75,31 @@ const NewProject = () => {
 
   return (
     <form onSubmit={projectSubmitHandler}>
-      <Input
+      <div className="inputBase">
+      <label htmlFor="">Title</label>
+      <input
         id='title'
-        element='input'
+        name="title"
         type='text'
         label='Title'
-        validators={[VALIDATOR_REQUIRE()]}
-        errorText='Input not valid'
-        onInput={inputHandler}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.title}
       />
-      <Input
+      <label htmlFor="">Description</label>
+      <textarea
+        rows="10"
         id='description'
-        element='textarea'
+        name="description"
         label='Description'
-        validators={[VALIDATOR_REQUIRE(), VALIDATOR_MINLENGTH(5)]}
-        errorText='Input not valid'
-        onInput={inputHandler}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        value={formik.values.description}
       />
-      <Button type='submit' disabled={!formState.isValid}>
+      <Button type='submit' disabled={!overallValidity} >
         CREATE PROJECT
       </Button>
+      </div>
     </form>
   );
 };

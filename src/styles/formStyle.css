@@ -1,4 +1,5 @@
 .login-box {
+  font-family: sans-serif;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -23,4 +24,46 @@
   flex-direction: column;
   width: 100%;
   margin-bottom: 10px;
+}
+
+.login-box form div label {
+  margin-bottom: 5px;
+}
+
+.inputBase {
+  margin: 1rem 1rem;
+  padding: 1rem;
+}
+
+.inputBase label {
+  margin-bottom: 0.5rem;
+  padding: 5px;
+}
+
+.inputBase label,
+.inputBase input,
+.inputBase textarea {
+  display: block;
+  margin: 0.5rem;
+}
+
+.inputBase input {
+  width: 300px;
+  font: inherit;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  padding: 0.15rem 0.25rem;
+}
+.inputBase textarea {
+  width: 90%;
+  font: inherit;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  padding: 0.15rem 0.25rem;
+}
+
+.inputInvalid input,
+.inputInvalid textarea {
+  border-color: red;
+  background: #ffd1d1;
 }
